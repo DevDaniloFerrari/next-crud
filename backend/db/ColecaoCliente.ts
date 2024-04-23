@@ -4,6 +4,7 @@ import {
   DocumentData,
   QueryDocumentSnapshot,
   SnapshotOptions,
+  addDoc,
   collection,
   deleteDoc,
   doc,
@@ -29,7 +30,8 @@ export default class ColecaoCliente implements ClienteRepositorio {
   };
 
   async salvar(cliente: Cliente): Promise<Cliente> {
-    await setDoc(this.#doc(cliente?.id), cliente);
+    if (cliente?.id) await setDoc(this.#doc(cliente?.id), cliente);
+    else await addDoc(this.#collection(), cliente);
     return cliente;
   }
 
@@ -38,18 +40,15 @@ export default class ColecaoCliente implements ClienteRepositorio {
   }
 
   async obterTodos(): Promise<Cliente[]> {
-    const query = await getDocs(this.#collection())
+    const query = await getDocs(this.#collection());
     return query.docs.map((doc) => doc.data()) ?? [];
   }
 
-  #doc(id?: string) {
-    return doc(
-      this.#collection(),
-      id
-    );
+  #doc(id: string) {
+    return doc(this.#collection(), id);
   }
 
-  #collection(){
-    return collection(firestore, "clientes").withConverter(this.#conversor)
+  #collection() {
+    return collection(firestore, "clientes").withConverter(this.#conversor);
   }
 }
